@@ -1,0 +1,99 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using XChat.Areas.Identity.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@using Microsoft.Data.SqlClient;
+@using System.Text.Json;
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+
+@{
+    ViewData["Title"] = "Home Page";
+    string connectionString = "Server=DESKTOP-OFRUC79;Database=XChat;Trusted_Connection=True;";  // typically, you get this from a config file
+
+    string sqlUsers = "select * from dbo.AspNetUsers";
+    SqlConnection conn = new SqlConnection(connectionString);
+
+    SqlCommand sqlCommand = new SqlCommand(sqlUsers, conn);
+    JArray users = new JArray();
+
+
+    {
+        // open connection, execute query, close connection
+        conn.Open();
+        SqlDataReader reader = sqlCommand.ExecuteReader();
+
+        while (reader.Read())
+        {
+            JObject obj = new JObject();
+            string fname = reader["FirstName"].ToString();
+            string lname = reader["LastName"].ToString();
+            string userid = reader["Id"].ToString();
+            string email = reader["Email"].ToString();
+            obj.Add("Id",userid);
+            obj.Add("Email", email);
+            obj.Add("FirstName", fname);
+            obj.Add("LastName", lname);
+            users.Add(obj);
+
+        }
+        
+    }
+
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to XChat</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+               
+                <th scope="col">Name</th>
+                <th scope="col">Chat</th>
+                
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in users)
+            {
+              
+                <tr>
+                    <th scope="row">@obj["FirstName"] @obj["LastName"]</th>
+                     <th scope="row">
+                        <input hidden id="myemail" value=@UserManager.GetUserName(User)>
+
+                        <button data_fname=@obj["FirstName"] data_lname=@obj["LastName"] data_email=@obj["Email"] class="btn btn-primary" onclick="getClicked(this)">Start Chat</button>
+
+                     </th>
+
+                    
+
+                </tr>
+
+            }
+        </tbody>
+    </table>
+    <script>
+        function getClicked(object) {
+            //localStorage.removeItem("email")
+            localStorage.removeItem("email")
+            localStorage.removeItem("fname")
+            localStorage.removeItem("lname")
+            localStorage.removeItem("myemail")
+            var email = object.getAttribute("data_email")
+            var fname = object.getAttribute("data_fname")
+            var lname = object.getAttribute("data_lname")
+            var user = document.getElementById("myemail").value;
+           
+            localStorage.setItem("email", email)
+            localStorage.setItem("fname", fname)
+            localStorage.setItem("lname", lname)
+            localStorage.setItem("myemail", user)
+
+            window.location = "/Chat/Create"
+
+        }
+    </script>
+</div>
