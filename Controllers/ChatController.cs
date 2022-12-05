@@ -136,10 +136,11 @@ namespace XChat.Controllers
         }
 
         // POST: Chat/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var url = Request.RouteValues;
             if (_context.Chats == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Chats'  is null.");

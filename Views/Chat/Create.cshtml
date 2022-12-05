@@ -17,8 +17,11 @@
 
 
 @{
-    string Email = "";
+
+    var Email = ViewContext.RouteData.Values["Email"];
     Console.WriteLine(Email);
+
+
     string connectionString = "Server=DESKTOP-OFRUC79;Database=XChat;Trusted_Connection=True;";  // typically, you get this from a config file
 
     string sqlChats = "select * from dbo.Chats";
@@ -217,15 +220,13 @@ var name = localStorage.getItem("fname")+" "+localStorage.getItem("lname")
 document.getElementById("senderID").value=myemail;
 document.getElementById("recipientID").value=email;
 document.getElementById("chatname").innerHTML=name;
-
-    @{
-        Email = localStorage.getItem("email");
-    }
+        document.getElementById("Email").value = email;
+   
 
 
 
 
-});
+        });
 </script>
 
 @section Scripts {
