@@ -5,26 +5,40 @@
 @using Newtonsoft.Json.Linq;
 @using Microsoft.AspNetCore.Identity
 @using XChat.Areas.Identity.Data
+@using  Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 @{
-    ViewData["Title"] = "Create";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chat";
+    
 }
 
 
 
 @{
 
-    var Email = ViewContext.RouteData.Values["Email"];
-    Console.WriteLine(Email);
+    var url = ViewContext.HttpContext.Request.QueryString;
+    string[] urlList = url.ToString().Split("=");
+    string Email = "";
+    string myEmail = "";
+    if(urlList.Length>1){
+        Email = urlList[1];
+        myEmail = UserManager.GetUserName(User);
+    }else{
+       
+    }
+    
+    
+  
 
 
     string connectionString = "Server=DESKTOP-OFRUC79;Database=XChat;Trusted_Connection=True;";  // typically, you get this from a config file
 
-    string sqlChats = "select * from dbo.Chats";
+    string sqlChats = "select * from dbo.Chats where SenderID='" + Email + "' or SenderID='" + myEmail + "' and RecipientID='" + Email + "' or RecipientID='" + myEmail + "' ";
     SqlConnection conn = new SqlConnection(connectionString);
 
     SqlCommand sqlCommand = new SqlCommand(sqlChats, conn);

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using XChat.Data;
 using XChat.Models;
 
+
 namespace XChat.Controllers
 {
     public class ChatController : Controller
@@ -28,6 +29,8 @@ namespace XChat.Controllers
         // GET: Chat/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+           
+
             if (id == null || _context.Chats == null)
             {
                 return NotFound();
@@ -56,12 +59,23 @@ namespace XChat.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ChatID,SenderID,RecipientID,Message,SendDate,Read")] Chat chat)
         {
+            var url = chat.RecipientID;
+            var currUrl = Request.QueryString;
+            
+            string page = "/Chat/Create?Email=" + url.ToString();
             //if (ModelState.IsValid)
             //{
-                chat.Read = "NO";
+
+            if (currUrl.ToString() == null)
+            {
+                return LocalRedirect("/");
+            }
+            chat.Read = "NO";
                 _context.Add(chat);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Create));
+
+            Console.WriteLine(page);
+            return LocalRedirect(page);
             //}
            
         }
@@ -140,7 +154,7 @@ namespace XChat.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var url = Request.RouteValues;
+            //var url = Request.Url.AbsoluteUri;
             if (_context.Chats == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Chats'  is null.");
