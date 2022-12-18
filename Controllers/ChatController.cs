@@ -71,6 +71,7 @@ namespace XChat.Controllers
                 return LocalRedirect("/");
             }
             chat.Read = "NO";
+            chat.SendDate = DateTime.Now;
                 _context.Add(chat);
                 await _context.SaveChangesAsync();
 

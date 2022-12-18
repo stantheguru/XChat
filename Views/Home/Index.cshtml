@@ -14,17 +14,17 @@
 
     string sqlUsers = "select * from dbo.AspNetUsers";
     SqlConnection conn = new SqlConnection(connectionString);
-
     SqlCommand sqlCommand = new SqlCommand(sqlUsers, conn);
     JArray users = new JArray();
 
 
     //chats
     string myEmail = UserManager.GetUserName(User);
-    string sqlChats = "select * from dbo.Chats where SenderID='" + myEmail + "'  or RecipientID='" + myEmail + "'";
+    string sqlChats = "select * from dbo.Chats where SenderID='" + myEmail + "'  or RecipientID='" + myEmail + "' order by ChatID desc";
 
     SqlCommand sqlCommandChats = new SqlCommand(sqlChats, conn);
     JArray chats = new JArray();
+    JArray tempArray = new JArray();
 
 
     {
@@ -69,39 +69,104 @@
             string chat_name = "";
             for(int i=0;i<users.Count;i++){
                 var juser = users[i];
-                Console.WriteLine(juser["Email"]);
-                if(juser["Email"].ToString()==recipient){
+
+                if((juser["Email"].ToString()!=myEmail) && (juser["Email"].ToString()==recipient)){
+                    Console.WriteLine(juser);
                     string first_name = juser["FirstName"].ToString();
                     string last_name = juser["LastName"].ToString();
                     chat_name = first_name + " " + last_name;
                     objChats.Add("ChatName", chat_name);
+                    objChats.Add("FirstName", first_name);
+                    objChats.Add("LastName", last_name);
+
                     break;
+
+
                 }
-                else if (juser["Email"].ToString() == sender)
+                else if ((juser["Email"].ToString() != myEmail) && (juser["Email"].ToString() == sender))
                 {
+
+
                     string first_name = juser["FirstName"].ToString();
                     string last_name = juser["LastName"].ToString();
                     chat_name = first_name + " " + last_name;
                     objChats.Add("ChatName", chat_name);
+                    objChats.Add("FirstName", first_name);
+                    objChats.Add("LastName", last_name);
+
                     break;
+
                 }
+            }
+            chats.Add(objChats);
+
+            for (int j = 0; j < chats.Count; j++)
+            {
+                var obj = chats[j];
+                var cname = obj["ChatName"];
+                if (tempArray.Count == 0)
+                {
+                    tempArray.Add(obj);
+                }
+
+
+                for (int k = 0; k < tempArray.Count; k++)
+                {
+
+                    var objTemp = tempArray[k];
+
+                    var cnameTemp = objTemp["ChatName"];
+
+                    if (cname.ToString() == cnameTemp.ToString())
+                    {
+
+                        break;
+                    }
+                    else if ((cname.ToString() != cnameTemp.ToString()) && k == tempArray.Count - 1)
+                    {
+
+                        tempArray.Add(obj);
+                    }
+                }
+
             }
 
 
-            chats.Add(objChats);
-
-
-
 
         }
-        JArray jChats = new JArray();
-        for(int j=0;j<chats.Count;j++){
-             var jchat = chats[j];
-            string chat_name = jchat["ChatName"].ToString();
-           
+        System.Console.WriteLine(users);
+        System.Console.WriteLine(tempArray);
 
+        for(int c=0;c<users.Count;c++){
+            var juse = users[c];
+            var cname = juse["FirstName"];
+            Console.WriteLine("name in users");
+            Console.WriteLine(cname);
+            if(juse["Email"].ToString() == myEmail){
+                    users.Remove(juse);
+                    
+               }
+            for (int k = 0; k < tempArray.Count; k++)
+            {
+                
+
+
+                var objTemp = tempArray[k];
+
+                var cnameTemp = objTemp["FirstName"];
+                Console.WriteLine("name in chats");
+                Console.WriteLine(cnameTemp);
+
+                if (cname.ToString() == cnameTemp.ToString())
+                {
+                    users.Remove(juse);
+                    
+
+                }
+                
+            }
+            
         }
-        
     }
     
 }
@@ -126,6 +191,7 @@
                     <th scope="row">@obj["FirstName"] @obj["LastName"]</th>
                      <th scope="row">
                         <input hidden id="myemail" value=@UserManager.GetUserName(User)>
+
 
                         <button data_fname=@obj["FirstName"] data_lname=@obj["LastName"] data_email=@obj["Email"] class="btn btn-primary" onclick="getClicked(this)">Start Chat</button>
 
@@ -175,13 +241,13 @@
         background: #f8f8f8 none repeat scroll 0 0;
        
         overflow: hidden;
-        width: 70%;
+        width: 100%;
         border-right: 1px solid #c4c4c4;
     }
 
     .inbox_msg {
         clear: both;
-        width: 70%;
+        width: 100%;
         overflow: hidden;
     }
 
@@ -382,7 +448,7 @@
 <div class="container">
 <h3 class=" text-center">Messaging</h3>
     <div class="messaging">
-        <center>
+        
 
       <div class="inbox_msg">
         <div class="inbox_people">
@@ -398,28 +464,33 @@
                 </span> </div>
             </div>
           </div>
-          <div class="inbox_chat">
-             
+          <div  class="inbox_chat">
+             @foreach(var obj in tempArray){
+                 var email = "";
+                 if(obj["SenderID"].ToString()==myEmail){
+                                email = obj["RecipientID"].ToString();
+                            }else{
+                                email = obj["SenderID"].ToString();
+                            }
+                            <div data_fname=@obj["FirstName"] data_lname=@obj["FirstName"] data_email=@email class="chat_list active_chat" onclick="getClicked(this)">
+                                      <input hidden id="myemail" value=@UserManager.GetUserName(User)>
 
-            <div class="chat_list active_chat">
-              <div class="chat_people">
+                                <div class="chat_people">
                 <div class="chat_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
                 <div class="chat_ib">
-                  <h5>@obj["ChatName"] <span class="chat_date">Dec 25</span></h5>
+                  <h5>@obj["ChatName"] <span class="chat_date">@obj["SendDate"]</span></h5>
                   <p>@obj["Message"]</p>
                 </div>
               </div>
             </div>
+             }
 
-            
-
-       
           </div>
         </div>
 
       
       </div>
-    </center>
+    
       
       
       

@@ -17,8 +17,6 @@
     
 }
 
-
-
 @{
 
     var url = ViewContext.HttpContext.Request.QueryString;
@@ -29,16 +27,12 @@
         Email = urlList[1];
         myEmail = UserManager.GetUserName(User);
     }else{
-       
-    }
-    
-    
-  
 
+    }
 
     string connectionString = "Server=DESKTOP-OFRUC79;Database=XChat;Trusted_Connection=True;";  // typically, you get this from a config file
 
-    string sqlChats = "select * from dbo.Chats where SenderID='" + Email + "' or SenderID='" + myEmail + "' and RecipientID='" + Email + "' or RecipientID='" + myEmail + "' ";
+    string sqlChats = "select * from dbo.Chats where SenderID='" + Email + "' and RecipientID='" + myEmail + "' or RecipientID='" + Email + "' and SenderID='" + myEmail + "' ";
     SqlConnection conn = new SqlConnection(connectionString);
 
     SqlCommand sqlCommand = new SqlCommand(sqlChats, conn);
@@ -59,17 +53,17 @@
             string sender = reader["SenderID"].ToString();
             string recipient = reader["RecipientID"].ToString();
 
-            
+
             obj.Add("Message", message);
             obj.Add("Read", read);
             obj.Add("SendDate", date);
             obj.Add("SenderID", sender);
             obj.Add("RecipientID", recipient);
-           
+
             chats.Add(obj);
 
         }
-
+        Console.WriteLine(chats);
     }
 }
 
